@@ -1,0 +1,154 @@
+from tabulate import tabulate
+
+# Define a class named "ATM" to represent the ATM functionality.
+class ATM:
+    def __init__(self):
+        self.initial_balance = 100000
+        self.balance = self.initial_balance
+        self.transaction_history = []
+
+    def deposit(self, amount):
+        self.balance += amount
+        transaction_detail = f'Deposited ${amount}'
+        self.transaction_history.append(transaction_detail)
+        return f'Deposited ${amount}. New balance: ${self.balance}'
+
+    def withdraw(self, amount):
+        if amount <= self.balance:
+            self.balance -= amount
+            self.transaction_history.append(f'Withdrawn ${amount}')
+            return f'Withdrawn ${amount}. New balance: ${self.balance}'
+        else:
+            return 'Insufficient funds'
+
+    def transfer(self, amount, recipient_details):
+        if amount > self.balance:
+            return "Insufficient funds"
+        self.balance -= amount
+        transaction_detail = f"Transferred ${amount} to {recipient_details}"
+        self.transaction_history.append(transaction_detail)
+        return f"Transferred ${amount} to {recipient_details}. New balance: ${self.balance}"
+
+    def get_balance(self):
+        return f'Current balance: ${self.balance}'
+
+    def get_transaction_history(self):
+        return self.transaction_history
+
+# Function to display ATM logo
+def display_logo():
+    welcome_logo = """
+    WELCOME TO THE ATM SYSTEM
+    --------------------------
+    """
+    print(welcome_logo)
+
+# Define a function named "atm_interface" to handle the ATM user interface.
+def atm_interface():
+    atm = ATM()
+    display_logo()
+    
+    print("Welcome to the ATM Interface")
+    user_id = input("Enter User ID: ")
+    pin = input("Enter PIN: ")
+
+    if user_id == "123456" and pin == "654321":
+        print("Login successful!\n")
+
+        while True:
+            print("\nATM Operations:")
+            print("1. Deposit")
+            print("2. Withdraw")
+            print("3. Transfer")
+            print("4. Check Balance")
+            print("5. Transaction History")
+            print("6. Quit")
+
+            choice = input("Enter your choice (1/2/3/4/5/6): ")
+
+            if choice == "1":
+                amount = float(input("Enter the deposit amount: $"))
+                pass_code = input("Enter 4 or 6 digit pass_code: ")
+                pass_code_display = '*' * len(pass_code)
+                result = atm.deposit(amount)
+                print(f"{result}\nPasscode: {pass_code_display}")
+
+            elif choice == "2":
+                amount = float(input("Enter the withdrawal amount: $"))
+                pass_code = input("Enter 4 or 6 digit pass_code: ")
+                pass_code_display = '*' * len(pass_code)
+                result = atm.withdraw(amount)
+                print(f"{result}\nPasscode: {pass_code_display}")
+
+            elif choice == "3":
+                print("Choose Transfer Type:")
+                print("1. Account Transfer")
+                print("2. Phone Transfer")
+                print("3. Card Transfer")
+                
+                transfer_type = int(input("Enter your choice (1/2/3): "))
+                amount = float(input("Enter the transfer amount: $"))
+                recipient = input("Enter the recipient's name: ")
+
+                if transfer_type == 1:
+                    details = input("Enter recipient's account number & IFSC code (Format: ACC_NUM,IFSC): ")
+                elif transfer_type == 2:
+                    details = input("Enter recipient's phone number & UPI ID (Format: PHONE,UPI): ")
+                elif transfer_type == 3:
+                    details = input("Enter recipient's card number: ")
+                else:
+                    print("Invalid transfer type selection.")
+                    continue
+
+                pass_code = input("Enter 4 or 6 digit pass_code: ")
+                pass_code_display = '*' * len(pass_code)
+                
+                transfer_details = f"Recipient: {recipient}, Details: {details}, Passcode: {pass_code_display}"
+                result = atm.transfer(amount, transfer_details)
+                print(result)
+
+            elif choice == "4":
+                balance = atm.get_balance()
+                pass_code = input("Enter 4 or 6 digit pass_code: ")
+                pass_code_display = '*' * len(pass_code)
+                print(f"{balance}\nPasscode: {pass_code_display}\nAvailable Balance: ${atm.balance:.2f}")
+
+            elif choice == "5":
+                pass_code = input("Enter 4 or 6 digit pass_code: ")
+                pass_code_display = '*' * len(pass_code)
+                
+                history = atm.get_transaction_history()
+                
+                if len(history) > 0:
+                    table = []
+                    available_balance = 100000  # Start from initial balance
+                    for i, transaction in enumerate(history, start=1):
+                        transaction_parts = transaction.split('$')
+                        if len(transaction_parts) > 1:
+                            transaction_amount = float(transaction_parts[-1].split()[0])
+                            
+                            if "Deposited" in transaction:
+                                available_balance += transaction_amount
+                            elif "Withdrawn" in transaction or "Transferred" in transaction:
+                                available_balance -= transaction_amount
+
+                        table.append([i, transaction, f"${available_balance:.2f}"])
+                    
+                    print(tabulate(table, headers=["#", "Transaction", "Available Balance"], tablefmt="grid"))
+                else:
+                    print("Transaction history is empty.")
+
+            elif choice == "6":
+                print("Thank you for using the ATM. Goodbye!")
+                return  # Exit gracefully
+
+            else:
+                print("Invalid choice. Please enter a valid option.")
+
+    else:
+        print("Invalid User ID or PIN. Exiting...")
+        return  # Exit gracefully
+
+# Check if the script is being run as the main program.
+if __name__ == "__main__":
+    atm_interface()
