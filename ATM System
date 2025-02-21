@@ -1,6 +1,4 @@
-from tabulate import tabulate
 
-# Define a class named "ATM" to represent the ATM functionality.
 class ATM:
     def __init__(self):
         self.initial_balance = 100000
@@ -35,15 +33,15 @@ class ATM:
     def get_transaction_history(self):
         return self.transaction_history
 
-# Function to display ATM logo
+
 def display_logo():
     welcome_logo = """
-    WELCOME TO THE ATM SYSTEM
+    WELCOME TO THE NEW BANK
     --------------------------
     """
     print(welcome_logo)
 
-# Define a function named "atm_interface" to handle the ATM user interface.
+
 def atm_interface():
     atm = ATM()
     display_logo()
@@ -52,7 +50,7 @@ def atm_interface():
     user_id = input("Enter User ID: ")
     pin = input("Enter PIN: ")
 
-    if user_id == "123456" and pin == "654321":
+    if user_id == "1234" and pin == "4321":
         print("Login successful!\n")
 
         while True:
