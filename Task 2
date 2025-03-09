@@ -1,0 +1,195 @@
+# Inventory Management System
+
+# Dictionaries to store inventory details
+unit_price = {}
+description = {}
+stock = {}
+
+# Read inventory data from file
+try:
+    with open("stock.txt", "r") as details:
+        no_items = int(details.readline().strip())
+
+        for _ in range(no_items):
+            part_no, price = details.readline().strip().split("#")
+            unit_price[int(part_no)] = float(price)
+
+        for _ in range(no_items):
+            part_no, desc = details.readline().strip().split("#")
+            description[int(part_no)] = desc
+
+        for _ in range(no_items):
+            part_no, quantity = details.readline().strip().split("#")
+            stock[int(part_no)] = int(quantity)
+
+except FileNotFoundError:
+    print("Warning: stock.txt not found. Starting with an empty inventory.")
+
+# Shopping cart
+cart = []
+
+print("\nWelcome to Inventory Management System (IMS)\n")
+print("Commands: ")
+print("A - Add an item")
+print("R - Remove an item")
+print("E - Edit an item")
+print("L - List all items")
+print("I - Inquire about a part")
+print("P - Purchase")
+print("C - Checkout")
+print("S - Show cart")
+print("remove - Remove an item from cart")
+print("help - See all commands again")
+print("Q - Quit")
+print()
+
+total_cost = 0
+checked_out = False
+
+while True:
+    command = input("What would you like to do? ").strip().lower()
+
+    if command == "q":
+        break
+
+    elif command == "a":  # Add an item
+        try:
+            part_no = int(input("Enter part number: "))
+            if part_no in unit_price:
+                print("Error: Part number already exists.")
+                continue
+            price = float(input("Enter part price: "))
+            desc = input("Enter part description: ")
+            quantity = max(0, int(input("Enter part stock: ")))  # Ensure non-negative stock
+
+            unit_price[part_no] = price
+            description[part_no] = desc
+            stock[part_no] = quantity
+
+            print(f"Added: {part_no} - {desc} | Price: ${price} | Stock: {quantity}")
+        except ValueError:
+            print("Invalid input. Please enter correct values.")
+
+    elif command == "e":  # Edit an item
+        try:
+            part_no = int(input("Enter part number to edit: "))
+            if part_no not in unit_price:
+                print("Error: Part number not found.")
+                continue
+
+            price = float(input("Enter new price: "))
+            desc = input("Enter new description: ")
+            quantity = max(0, int(input("Enter new stock: ")))
+
+            unit_price[part_no] = price
+            description[part_no] = desc
+            stock[part_no] = quantity
+
+            print(f"Updated: {part_no} - {desc} | Price: ${price} | Stock: {quantity}")
+        except ValueError:
+            print("Invalid input. Please enter correct values.")
+
+    elif command == "r":  # Remove an item
+        try:
+            part_no = int(input("Enter part number to remove: "))
+            if part_no not in unit_price:
+                print("Error: Part not found.")
+                continue
+
+            confirm = input(f"Are you sure you want to remove part {part_no}? (y/n): ").strip().lower()
+            if confirm == "y":
+                del unit_price[part_no]
+                del description[part_no]
+                del stock[part_no]
+                print("Item removed successfully.")
+        except ValueError:
+            print("Invalid input. Please enter correct values.")
+
+    elif command == "l":  # List all items
+        print("\nCurrent Inventory:")
+        for part_no in unit_price:
+            print(f"{part_no}: {description[part_no]} | Price: ${unit_price[part_no]} | Stock: {stock[part_no]}")
+        print()
+
+    elif command == "p":  # Purchase an item
+        try:
+            part_no = int(input("Enter part number to purchase: "))
+            if part_no not in unit_price:
+                print("Error: Part not found.")
+                continue
+
+            if stock[part_no] > 0:
+                stock[part_no] -= 1
+                total_cost += unit_price[part_no]
+                cart.append(part_no)
+                print(f"Added to cart: {description[part_no]} | Price: ${unit_price[part_no]}")
+            else:
+                print("Out of stock.")
+        except ValueError:
+            print("Invalid input. Please enter correct values.")
+
+    elif command == "c":  # Checkout
+        if not cart:
+            print("Your cart is empty.")
+        else:
+            print("\nYou bought:")
+            for part_no in cart:
+                print(f"- {description[part_no]} | ${unit_price[part_no]}")
+
+            tax = round(0.13 * total_cost, 2)
+            total = round(total_cost + tax, 2)
+            print(f"Subtotal: ${total_cost}")
+            print(f"Tax (13%): ${tax}")
+            print(f"Total: ${total}\n")
+
+            total_cost = 0
+            cart.clear()
+            checked_out = True
+
+    elif command == "s":  # Show cart
+        if not cart:
+            print("Your cart is empty.")
+        else:
+            print("\nItems in your cart:")
+            for part_no in cart:
+                print(f"- {description[part_no]} | ${unit_price[part_no]}")
+            print()
+
+    elif command == "remove":  # Remove an item from cart
+        try:
+            part_no = int(input("Enter part number to remove from cart: "))
+            if part_no in cart:
+                cart.remove(part_no)
+                stock[part_no] += 1
+                total_cost -= unit_price[part_no]
+                print(f"Removed {description[part_no]} from cart.")
+            else:
+                print("Item not in cart.")
+        except ValueError:
+            print("Invalid input.")
+
+    elif command == "help":  # Show commands
+        print("\nCommands:")
+        print("A - Add an item")
+        print("R - Remove an item")
+        print("E - Edit an item")
+        print("L - List all items")
+        print("I - Inquire about a part")
+        print("P - Purchase")
+        print("C - Checkout")
+        print("S - Show cart")
+        print("remove - Remove an item from cart")
+        print("help - See all commands again")
+        print("Q - Quit\n")
+
+# Save updated inventory to file
+with open("stock.txt", "w") as details:
+    details.write(str(len(unit_price)) + "\n")
+    for part_no in unit_price:
+        details.write(f"{part_no}#{unit_price[part_no]}\n")
+    for part_no in description:
+        details.write(f"{part_no}#{description[part_no]}\n")
+    for part_no in stock:
+        details.write(f"{part_no}#{stock[part_no]}\n")
+
+print("\nThank you for using IMS. Goodbye!")
